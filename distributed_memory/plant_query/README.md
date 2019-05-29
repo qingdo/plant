@@ -1,5 +1,5 @@
 # Hybrid implementation #
-This is the implementation of the plant algorithm to construct cannonical hub labeling for shortest distance queries in distributed-memory environemnt. 
+This is the implementation of the plant algorithm to construct cannonical hub labeling for shortest distance queries in distributed-memory environemnt. This code is contributed by Qing Dong and Kartik Lakhotia. 
 ## Getting started ##
 
 #### Compile ####

@@ -1,5 +1,5 @@
 # Introduction #
-This is the implementation of paper submission "Planting Trees for scalable and efficient Canonical Hub Labeling" of SC'19. The codes are contributed by [Qing Dong](https://github.com/DongQing1996) and [Kartik Lakhotia](https://github.com/kartiklakhotia). We provided the implementation of four algorithms as below. Please go to the corresponding folder to see detailed introduction and instructions for each algorithm. 
+This is the implementation of hub labeling algorithms developed by[Qing Dong](https://github.com/DongQing1996) and [Kartik Lakhotia](https://github.com/kartiklakhotia). We provided the implementation of four algorithms as below. Please go to the corresponding folder to see detailed introduction and instructions for each algorithm. All four algorithms takes two inputs, one is the graph file (graph topology, in DIMACS, METIS, SNAP or edgelist format) and the other one is the ordering files (the ordering of all vertices). 
 * In shared memory platform (shared\_memory)
 	1.  Label Construction and Cleaning (lcc)
 	2.  Global Local Labeling (gll)
@@ -7,9 +7,9 @@ This is the implementation of paper submission "Planting Trees for scalable and 
 	1.  Prune Labels and Not Trees (plant)
 	2.  Hybrid algorithm of plant and Distributed GLL (hybrid)
 	
-Some of the implementation (especially the shared memory code) are based on the [savrus's code] (https://github.com/savrus/hl). 
+Some of the implementation (especially the shared memory code) are based on the [savrus's code](https://github.com/savrus/hl). 
 # Datasets #
-We provided four datasets for testing. They are as following. Please go to corrsponding folder to see running instructions for each algorithm. All four algorithms takes two inputs, one is the graph file (graph topology, in DIMACS, METIS, SNAP or edgelist format) and the other one is the ordering files (the ordering of all vertices). 
+We provided four datasets for testing. They are as following. Please go to corrsponding folder to see running instructions for each algorithm. 
 * [AUT](https://www.cc.gatech.edu/dimacs10/data/coauthor/) (coAuther network)
 * [CAL](http://users.diag.uniroma1.it/challenge9/download.shtml) (California road network)
 * [WND](https://snap.stanford.edu/data/web-NotreDame.html) (University of Notre Dame webpages)
@@ -26,5 +26,5 @@ We also used some other datasets for testing. We do not push them on github beca
 * [LIJ](https://snap.stanford.edu/data/com-LiveJournal.html) (Live Journal Social Network)
 
 ## Ordering ##
-We used [betweeness-based ordering] (http://degroup.cis.umac.mo/sspexp/) for road networks and [degree-based ordering] (https://github.com/savrus/hl) for scale-free networks. 
+We used [betweeness-based ordering](http://degroup.cis.umac.mo/sspexp/) for road networks and [degree-based ordering](https://github.com/savrus/hl) for scale-free networks. 
 

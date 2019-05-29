@@ -1,5 +1,5 @@
 # Introduction #
-This is the implementation of paper submission "Planting Trees for scalable and efficient Canonical Hub Labeling" of SC'19. The codes are contributed by Qing Dong and Kartik Lakhotia. We provided the implementation of four algorithms as below. Please go to the corresponding folder to see detailed introduction and instructions for each algorithm. 
+This is the implementation of paper submission "Planting Trees for scalable and efficient Canonical Hub Labeling" of SC'19. The codes are contributed by [Qing Dong](https://github.com/DongQing1996) and [Kartik Lakhotia](https://github.com/kartiklakhotia). We provided the implementation of four algorithms as below. Please go to the corresponding folder to see detailed introduction and instructions for each algorithm. 
 * In shared memory platform (shared\_memory)
 	1.  Label Construction and Cleaning (lcc)
 	2.  Global Local Labeling (gll)
@@ -15,7 +15,7 @@ We provided four datasets for testing. They are as following. Please go to corrs
 * [WND](https://snap.stanford.edu/data/web-NotreDame.html) (University of Notre Dame webpages)
 * [YTB](https://snap.stanford.edu/data/com-Youtube.html) (Youtube social network)
 
-We also used some other datasets for testing. 
+We also used some other datasets for testing. We do not push them on github because file size limit. They can be found by clicking the links below.
 * [EAS](http://users.diag.uniroma1.it/challenge9/download.shtml) (Eastern USA road network)
 * [CTR](http://users.diag.uniroma1.it/challenge9/download.shtml) (Central USA road network)
 * [USA](http://users.diag.uniroma1.it/challenge9/download.shtml) (Full USA road network)

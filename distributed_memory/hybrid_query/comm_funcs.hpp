@@ -44,7 +44,7 @@ Vertex findLastCommonSend (lCounts& COMMON_LABEL_BUDGET, std::vector<lCounts> &c
         return prev_sync_thres;
     }
     Vertex spts_per_sync = sync_thres - prev_sync_thres;
-    std::cout << " try  find last common send success "<<spts_per_sync<<std::endl;
+    //std::cout << " try  find last common send success "<<spts_per_sync<<std::endl;
     //find the least important vertex whose labels can still be counted
     Vertex lastV = sync_thres;
 	volatile bool flag=false;
@@ -57,13 +57,13 @@ Vertex findLastCommonSend (lCounts& COMMON_LABEL_BUDGET, std::vector<lCounts> &c
 			flag=true;
         }
     }
-    std::cout << " flag success "<<std::endl;
+    //std::cout << " flag success "<<std::endl;
     //recompute remaining budget
     if (cumulative_label_counts[spts_per_sync-1]>=COMMON_LABEL_BUDGET)
         COMMON_LABEL_BUDGET = 0;
     else
         COMMON_LABEL_BUDGET -= cumulative_label_counts[spts_per_sync-1];
-    std::cout << " before return  "<<std::endl;
+    //std::cout << " before return  "<<std::endl;
 
     return lastV;
 }

@@ -197,12 +197,21 @@ public:
             total += label_v[v][0].size() + label_v[v][1].size();
         return static_cast<double>(total)/2/n;
     }
+
     long long get_total() const {
         long long total = 0;
         for (Vertex v = 0; v < n; ++v)
             total += label_v[v][0].size() + label_v[v][1].size();
         return total;
     }
+
+    long long get_cap() const {
+        long long total = 0;
+        for (Vertex v = 0; v < n; ++v)
+            total += label_v[v][0].capacity() + label_v[v][1].capacity();
+        return total;
+    }
+
     int check_label() const {
         for (Vertex v = 0; v < n; ++v) {
             if(label_d[v][0].size() != label_v[v][0].size())

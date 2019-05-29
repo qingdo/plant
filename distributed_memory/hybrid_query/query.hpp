@@ -56,10 +56,17 @@ bool query(std::vector<Distance> &dist, std::vector<Vertex> &queries, Labeling &
 	
 	double query_start = 0, query_end = 0, query_time = 0;
 	if (query_mode == 0) 	{ //mode 0 - full labeling is already in one machine
-    	query_start = omp_get_wtime();
-		if(world_rank==0) batchLocalQuery(dist, queries, labels, NUM_THREAD);
-    	query_end = omp_get_wtime();
-		if (world_rank==0) std::cout<<" "<<query_end-query_start<<std::endl;
+		double total = 0;
+		for (int i=0;i<queries.size()/2;i++) {
+			std::vector<hl::Vertex> single_queries(2);
+			single_queries[0] = queries[i*2];
+			single_queries[1] = queries[i*2+1];
+	   	 	query_start = omp_get_wtime();
+			if(world_rank==0) batchLocalQuery(dist, single_queries, labels, NUM_THREAD);
+	   	 	query_end = omp_get_wtime();
+			total += query_end - query_start;
+		}
+		if (world_rank==0) std::cout<<"QLSN total: "<<total<<std::endl;
 	}
 	if (query_mode == 1)	{ //mode1 - gather labels in one machine and do query
 		std::vector<int> label_list;
@@ -104,15 +111,15 @@ bool query(std::vector<Distance> &dist, std::vector<Vertex> &queries, Labeling &
     	query_start = omp_get_wtime();
 		batchDistQuery(m3_res, queries, labels, world_rank, world_size, NUM_THREAD);
     	query_end = omp_get_wtime();
-		if (world_rank==0) std::cout<<"reduce: "<<query_end-query_start<<std::endl;
+		if (world_rank==0) std::cout<<"QFDL: "<<query_end-query_start<<std::endl;
 		// mode 3
 		PartPair dist_labeling (labels, world_size, world_rank, NUM_THREAD);	
     	query_start = omp_get_wtime();
 		dist_labeling.query(m2_res, queries);
     	query_end = omp_get_wtime();
-		if (world_rank==0) std::cout<<query_end-query_start<<std::endl;
+		if (world_rank==0) std::cout<<"QDOL: "<<query_end-query_start<<std::endl;
 		if (world_rank==0)	{
-			for (int i = 0; i < 10000; i++) {
+			for (int i = 0; i < queries.size()/10000 + 1; i++) {
 				if (m2_res[i]!=m3_res[i]) {
 					std::cout<<"Diff happenes in  checking "<<queries[i*2] <<" to "<<queries[i*2+1] <<" mode 2: "<<m2_res[i]<<" mode3: "<<m3_res[i]<<std::endl;
 				
@@ -120,10 +127,33 @@ bool query(std::vector<Distance> &dist, std::vector<Vertex> &queries, Labeling &
 			}
 		}
 	}
-	else if (query_mode == 6) {//do not do query
-	}	
-		
-	//std::cout<<"End queries success"<<std::endl;
-	//if (world_rank==0) std::cout<<query_end-query_start<<std::endl;
+	else if (query_mode == 6) { //mode5 - compare mode 2 and mode 3 Latency
+     	std::vector<Distance> m2_res;
+     	std::vector<Distance> m3_res;
+		double total = 0;
+		for (int i=0;i<queries.size()/2;i++) {
+			std::vector<hl::Vertex> single_queries(2);
+			single_queries[0] = queries[i*2];
+			single_queries[1] = queries[i*2+1];
+	   	 	query_start = omp_get_wtime();
+	   	 	batchDistQuery(m3_res, single_queries, labels, world_rank, world_size, NUM_THREAD);
+	   	 	query_end = omp_get_wtime();
+			total += query_end - query_start;
+		}
+		if (world_rank==0) std::cout<<"QFDL total: "<<total<<std::endl;
+		// mode 3
+		PartPair dist_labeling (labels, world_size, world_rank, NUM_THREAD);	
+		total = 0;
+		for (int i=0;i<queries.size()/2;i++) {
+			std::vector<hl::Vertex> single_queries(2);
+			single_queries[0] = queries[i*2];
+			single_queries[1] = queries[i*2+1];
+	   	 	query_start = omp_get_wtime();
+	   	 	dist_labeling.query(m2_res, single_queries);
+	   	 	query_end = omp_get_wtime();
+			total += query_end - query_start;
+		}
+		if (world_rank==0) std::cout<<"QDOL total: "<<total<<std::endl;
+	}
 }
 }

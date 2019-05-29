@@ -27,11 +27,11 @@ int main(int argc, char** argv)
     std::vector<unsigned int> order;
     int query_mode = 5;
     unsigned int i=0;
-    for(unsigned int argi=0;argi<argc;argi++)
-    {
-        printf("%s ",argv[argi]);
-    }
-    std::cout<<std::endl;
+   // for(unsigned int argi=0;argi<argc;argi++)
+   // {
+   //     printf("%s ",argv[argi]);
+   // }
+   // std::cout<<std::endl;
     for (unsigned int i=0; i<argc; i++)
     {
         if (strcmp(argv[i], "-o") == 0) // vertex ordering
@@ -62,7 +62,7 @@ int main(int argc, char** argv)
     }
 
     unsigned int N = order.size();
-    std::cerr<<"Order size: "<<N<<" |V|: "<<gDij.get_n()<<std::endl;
+    //std::cerr<<"Order size: "<<N<<" |V|: "<<gDij.get_n()<<std::endl;
     hl::Labeling labeling(N);
     //local_labeling=new hl::Labeling(N);
 	std::vector <unsigned int> rev_map (N);
@@ -79,13 +79,15 @@ int main(int argc, char** argv)
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     int num_queries = 10000000;
+    //int num_queries = 100000;
     //remove common labeling
     labeling.remove_common(NUM_THREAD, world_rank, world_size);
-    std::cout<<"After remove "<<world_rank<<" ALS "<<labeling.get_avg()<<std::endl;
-	  std::vector<hl::Vertex> queries(num_queries*2);
-	  hl::generate_query(queries, num_queries, N, NUM_THREAD);
-	  std::vector<hl::Distance> dist(num_queries);
-	  hl::query(dist, queries, labeling, query_mode, NUM_THREAD); 
+    std::cout<<"QFDL # labels in node, "<<world_rank<<", is, "<<labeling.get_total()<<std::endl;
+    std::cout<<"DFDL # cap in node, "<<world_rank<<", is, "<<labeling.get_cap()<<std::endl;
+	std::vector<hl::Vertex> queries(num_queries*2);
+	hl::generate_query(queries, num_queries, N, NUM_THREAD);
+	std::vector<hl::Distance> dist(num_queries);
+	hl::query(dist, queries, labeling, query_mode, NUM_THREAD); 
 
 //    for (unsigned int i=0; i<argc; i++) {
 //        if (strcmp(argv[i], "-l") == 0)  {//if write to a file

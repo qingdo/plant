@@ -301,7 +301,7 @@ omp_set_num_threads(NUM_THREAD);
     int cnt = world_rank;
 
     while (cnt < N) {
-        if(world_rank==0) std::cout << " Threshold =  "<<sync_thres<<std::endl;
+        //if(world_rank==0) std::cout << " Threshold =  "<<sync_thres<<std::endl;
         // individual labels per hub//
         std::vector<int> labels_per_hub (sync_thres-prev_sync_thres,0);
 
@@ -346,7 +346,7 @@ omp_set_num_threads(NUM_THREAD);
 								for (size_t node_id=0; node_id<world_size; node_id++) {
 									if (node_id == world_rank) continue;
 									MPI_Win_lock(MPI_LOCK_EXCLUSIVE, node_id, 0, win);
-									std::cout<<"node " <<world_rank<<" write to node "<<node_id<<", Tree "<<local_cnt<<", ratio: "<<size_ratio<<std::endl;
+									//std::cout<<"node " <<world_rank<<" write to node "<<node_id<<", Tree "<<local_cnt<<", ratio: "<<size_ratio<<std::endl;
 									MPI_Put(&global_phase_sync[0], 1, MPI_INT, node_id, 0, 1, MPI_INT, win);
 									MPI_Win_unlock(node_id, win);
 									//std::cout<<" Success! node " <<world_rank<<" write to node "<<node_id<<", Tree "<<local_cnt<<", ratio: "<<size_ratio<<std::endl;
@@ -381,7 +381,7 @@ omp_set_num_threads(NUM_THREAD);
 
 		if (local_phase_sync[0]==1 && global_phase_sync[0]==0)
 		{
-									std::cout<<"node " <<world_rank<<std::endl;
+									//std::cout<<"node " <<world_rank<<std::endl;
             global_phase_sync[0] = 1;
 			for (size_t node_id=0; node_id<world_size; node_id++) {
 				if (node_id == world_rank) continue;
@@ -396,7 +396,7 @@ omp_set_num_threads(NUM_THREAD);
         if (do_plant && switch_compute && (global_phase_sync[0]==1))
         {
             //find the max tree to compute. allreduce
-									std::cout<<"out of plant " <<world_rank<<std::endl;
+								//	std::cout<<"out of plant " <<world_rank<<std::endl;
             int max_cnt;
             MPI_Allreduce(&cnt, &max_cnt, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
             //update sync_thres
@@ -416,12 +416,12 @@ omp_set_num_threads(NUM_THREAD);
         // find out accumulated label counts generated in this sync//
         std::vector<lCounts> cumulative_label_counts = accLabelCountsGen(labels_per_hub, world_rank, NUM_THREAD);
 
-        std::cout << " cum label count success "<<std::endl;
+        //std::cout << " cum label count success "<<std::endl;
         // find out last vertex that can be sent//
         Vertex lastV, lastCV;
         lastCV = findLastCommonSend(COMMON_LABEL_BUDGET, cumulative_label_counts, sync_thres, prev_sync_thres, NUM_THREAD);
 
-        std::cout << " successfully calculate last common send  "<<lastCV<<std::endl;
+        //std::cout << " successfully calculate last common send  "<<lastCV<<std::endl;
 
         // initialize offset vector to denote how many local labels have been loaded/processed //
         //local_load_offset[2*x] -> offset of x in backward (false) direction
@@ -437,30 +437,30 @@ omp_set_num_threads(NUM_THREAD);
             {
                 do
                 {
-                    std::cout << " try  find last send success "<<std::endl;
+                    //std::cout << " try  find last send success "<<std::endl;
                     lastV = findLastSend(MEM_BUDGET, cumulative_label_counts, sync_thres, prev_sync_thres, NUM_THREAD);
-                    std::cout << " find last send success "<< lastV<<std::endl;
+                    //std::cout << " find last send success "<< lastV<<std::endl;
                     parallelLoadWOffset(label_list, local_labeling, local_load_offset, std::min(lastCV, lastV), NUM_THREAD);
-                    std::cout << " Load W offset success "<<std::endl;
+                    //std::cout << " Load W offset success "<<std::endl;
                     int label_local_iter_sum = label_list.size();
-                    std::cout << "label_local_iter_sum "<<label_local_iter_sum<<std::endl;
+                    //std::cout << "label_local_iter_sum "<<label_local_iter_sum<<std::endl;
                     std::vector<int> world_node_offsets = gatherAllLabels(label_list, recv_buffer, world_size, world_rank);
-                    std::cout << "Gather all labels success "<<std::endl;
+                    //std::cout << "Gather all labels success "<<std::endl;
                     int label_global_iter_sum = recv_buffer.size();
-                    std::cout << "label_global_iter_sum "<<label_global_iter_sum<<std::endl;
+                    //std::cout << "label_global_iter_sum "<<label_global_iter_sum<<std::endl;
                     std::vector<unsigned int> dummy_mask (1);
                     loadFromRecvBuffer(recv_buffer, dummy_mask, false, 0, label_global_iter_sum, world_node_offsets[world_rank], world_node_offsets[world_rank]+label_local_iter_sum, lastCV, common_labeling, labeling);
-                    std::cout << "loadfrom recv buffer success"<<std::endl;
+                    //std::cout << "loadfrom recv buffer success"<<std::endl;
                     updateCumulativeCounts(cumulative_label_counts, std::min(lastCV, lastV), prev_sync_thres);
-                    std::cout << " common once success "<<std::endl;
+                    //std::cout << " common once success "<<std::endl;
                 }
                 while(lastV < lastCV);
 
-                std::cout << " common_labeling size "<<common_labeling.get_avg()<<std::endl;
+                //std::cout << " common_labeling size "<<common_labeling.get_avg()<<std::endl;
                 //std::cout << " label check "<<common_labeling.check_label()<<std::endl;
                 common_labeling.sort_partial(NUM_THREAD, common_last_loc);
                 //common_labeling.sort(NUM_THREAD);
-                std::cout << " sort common lableing success "<<std::endl;
+                //std::cout << " sort common lableing success "<<std::endl;
             }
             //Move hubs that were not broadcasted to global labeling//
             if (lastCV < sync_thres)

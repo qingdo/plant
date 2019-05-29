@@ -1,5 +1,8 @@
-// Akiba et al. presented a 'pruned labeling' algorithm to build Hierarchical Hub Labels from a vertex order.
-// This file contains Akiba et. al. algorithm implementation
+// This file contains GLL algorithm for hub labeling that efficiently parallelizes
+// PLL algorithm by Akiba et al.
+//
+//  Author: Qing Dong, Kartik Lakhotia
+//  Email id: qingdong@usc.edu, klakhoti@usc.edu
 //
 // Copyright (c) 2014, 2015 savrus
 //
@@ -257,43 +260,6 @@ void run_paraPLL(Graph* g, std::vector<Vertex> &order, std::vector<Vertex> &revM
         //initially run NUM_THREAD SSSP's without querying
         ////////////////////////////////////////////////////////////////////////////////
         ls = omp_get_wtime();
-//        unsigned int rootPar = (NUM_THREAD/2 >= 1) ? NUM_THREAD/2 : 1;
-//#pragma omp parallel for num_threads(NUM_THREAD) schedule(static,1)
-//        for (int th = 0; th < NUM_THREAD; th++) {
-//                unsigned int tid = omp_get_thread_num();
-//                size_t localCnt = __sync_fetch_and_add(&cnt, 1);
-//                size_t root = localCnt/2;
-//                bool side = ((localCnt % 2) == 1);
-//                unsigned int label_count = ak[tid].labeled_dijkstra(root, side, lck, order, revMap, local_labeling); 
-//                prevSize[tid<<6] = label_count;
-//        }
-//
-//        le = omp_get_wtime();
-//        lt += le-ls;
-//      //  printf("time for labeling first %d trees = %lf \n", rootPar, (le-ls)*1000);
-//
-//        ////////////////// sort //////////////////////
-//        local_labeling.sort(NUM_THREAD);
-//        ///////////////// cleaning ///////////////////
-//        se = omp_get_wtime();
-//        st += se-le;
-//      //  printf("time for sorting first %d trees = %lf \n", rootPar, (se-le)*1000);
-//
-//#pragma omp parallel for num_threads(NUM_THREAD) schedule (dynamic, NUM_THREAD)
-//        for (size_t vertex_i = 0; vertex_i < N; vertex_i++) {
-//                for (int side = 0; side < 2; ++side) {
-//                        for (size_t i = 0; i < local_labeling.label_v[vertex_i][side].size(); ++i) {
-//                                size_t hub_order = local_labeling.label_v[vertex_i][side][i];
-//                                hl::Vertex hub = order[hub_order];
-//                                hl::Distance hub_dist = local_labeling.label_d[vertex_i][side][i];
-//                                if (!local_labeling.clean_cover(vertex_i, hub, side, hub_dist, hub_order, i))
-//                                        labeling.add_lockfree(vertex_i, side, hub_order, hub_dist);
-//                        }   
-//                }
-//        } 
-//        ce = omp_get_wtime();
-//        ct += ce-se;
-//        printf("time for cleaning first %d trees = %lf \n", rootPar, (ce-se)*1000);
         ////////////////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////////////

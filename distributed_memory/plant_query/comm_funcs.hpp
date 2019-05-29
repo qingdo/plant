@@ -1,3 +1,9 @@
+//This file contains helper functions 
+//for MPI communication (dividing the data, copmuting masks etc.)
+//
+//  Author: Qing Dong, Kartik Lakhotia
+//  Email id: qingdong@usc.edu, klakhoti@usc.edu
+
 #ifndef COMM_FUNC_H
 #define COMM_FUNC_H
 

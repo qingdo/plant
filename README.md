@@ -1,5 +1,5 @@
 # Introduction #
-This is the implementation of hub labeling algorithms developed by [Qing Dong](https://github.com/DongQing1996) and [Kartik Lakhotia](https://github.com/kartiklakhotia). We provided the implementation of four algorithms as below. Please go to the corresponding folder to see detailed introduction and instructions for each algorithm. All four algorithms takes two inputs, one is the graph file (graph topology, in DIMACS, METIS, SNAP or edgelist format) and the other one is the ordering files (the ordering of all vertices). 
+This is the implementation of hub labeling algorithms developed by [Qing Dong](https://github.com/DongQing1996) and [Kartik Lakhotia](https://github.com/kartiklakhotia). We provided the implementation of four algorithms as below. Please go to the corresponding folder to see detailed introduction and instructions for each algorithm. All four algorithms take two inputs, one is the graph file (graph topology, in DIMACS, METIS, SNAP or edgelist format) and the other one is the ranking function (a total ordering on all vertices). 
 * In shared memory platform (shared\_memory)
 	1.  Label Construction and Cleaning (lcc)
 	2.  Global Local Labeling (gll)
@@ -7,7 +7,6 @@ This is the implementation of hub labeling algorithms developed by [Qing Dong](h
 	1.  Prune Labels and Not Trees (plant)
 	2.  Hybrid algorithm of plant and Distributed GLL (hybrid)
 	
-Some of the implementation (especially the shared memory code) are based on the [savrus's code](https://github.com/savrus/hl). 
 # Datasets #
 We provided four datasets for testing. They are as following. Please go to corrsponding folder to see running instructions for each algorithm. 
 * [AUT](https://www.cc.gatech.edu/dimacs10/data/coauthor/) (coAuther network)
@@ -28,3 +27,5 @@ We also used some other datasets for testing. We do not push them on github beca
 ## Ordering ##
 We used [betweeness-based ordering](http://degroup.cis.umac.mo/sspexp/) for road networks and [degree-based ordering](https://github.com/savrus/hl) for scale-free networks. 
 
+##Acknowledgements##
+Some basic functions in our code are based on the implementation given in [savrus's code](https://github.com/savrus/hl)

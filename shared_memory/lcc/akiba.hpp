@@ -1,5 +1,8 @@
-// Akiba et al. presented a 'pruned labeling' algorithm to build Hierarchical Hub Labels from a vertex order.
-// This file contains Akiba et. al. algorithm implementation
+// This file contains LCC algorithm for hub labeling that consists of parallel
+// PLL algorithm by Akiba et al followed by Label Cleaning.
+//
+//  Author: Qing Dong, Kartik Lakhotia
+//  Email id: qingdong@usc.edu, klakhoti@usc.edu
 //
 // Copyright (c) 2014, 2015 savrus
 //

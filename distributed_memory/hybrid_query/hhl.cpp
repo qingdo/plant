@@ -1,10 +1,8 @@
-/**
- * Author: Qing Dong, Kartik Lakhotia
- * Email id: qingdong@usc.edu, klakhoti@usc.edu
- * Date: 04-May-2018
- *
- * This code implements the parallelization of the pruned highway labeling algorithm which is the second phase of the hhl algorithm (Akiba et al. 2014).
- */
+// This file contains implementation of Hybrida PLaNT + PLL algorithm
+// for hub labeling on distributed machines.
+//
+//  Author: Qing Dong, Kartik Lakhotia
+//  Email id: qingdong@usc.edu, klakhoti@usc.edu
 
 #include "labeling.hpp"
 #include "ordering.hpp"

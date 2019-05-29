@@ -1,6 +1,9 @@
 // Dijkstra algorithm is well-known algorithm for single-source shortes path problem.
 // This file contains Dijkstra algorithm implementation.
 //
+//  Author: Qing Dong, Kartik Lakhotia
+//  Email id: qingdong@usc.edu, klakhoti@usc.edu
+//
 // Copyright (c) 2014, 2015 savrus
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy

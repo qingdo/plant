@@ -1,3 +1,8 @@
+// This file implements querying using distributed machines.
+//
+//  Author: Qing Dong, Kartik Lakhotia
+//  Email id: qingdong@usc.edu, klakhoti@usc.edu
+
 
 #include <vector>
 #include <omp.h>

@@ -1,3 +1,13 @@
+// This file implements helper functions for 
+// maintaining label tables and computing state of a
+// node during pre-processing. 
+//
+// Functions include parallel prefix sum, label partitioning,
+// moving labels between MPI buffers and label tables
+//
+//  Author: Qing Dong, Kartik Lakhotia
+//  Email id: qingdong@usc.edu, klakhoti@usc.edu
+
 #include <vector>
 #include <omp.h>
 #include "graph.hpp"

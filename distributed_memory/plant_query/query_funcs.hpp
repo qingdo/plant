@@ -1,3 +1,9 @@
+// Wrappers for batch querying on cluster nodes
+//
+//  Author: Qing Dong, Kartik Lakhotia
+//  Email id: qingdong@usc.edu, klakhoti@usc.edu
+//
+
 
 #include <vector>
 #include <omp.h>

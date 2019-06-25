@@ -1,5 +1,8 @@
-// Akiba et al. presented a 'pruned labeling' algorithm to build Hierarchical Hub Labels from a vertex order.
-// This file contains Akiba et. al. algorithm implementation
+// This file contains GLL algorithm for hub labeling that efficiently parallelizes
+// PLL algorithm by Akiba et al.
+//
+//  Author: Qing Dong, Kartik Lakhotia
+//  Email id: qingdong@usc.edu, klakhoti@usc.edu
 //
 // Copyright (c) 2014, 2015 savrus
 //
@@ -180,10 +183,9 @@ void run_paraPLL(Graph* g, std::vector<Vertex> &order, std::vector<Vertex> &revM
         }
         le = omp_get_wtime();
         lt += le-ls;
-        //printf("time for labeling %d trees = %lf \n", cnt/2, (le-ls)*1000);
-        //printf("total label size: %d\n", label_sum); 
          ////////////////// sort //////////////////////
         local_labeling.sort(NUM_THREAD);
+        lt = le-ls;
 
 
         ///////////////// cleaning ///////////////////
@@ -208,7 +210,7 @@ void run_paraPLL(Graph* g, std::vector<Vertex> &order, std::vector<Vertex> &revM
         ct += ce - se;
         }
 
-    std::cout << "Average label size after paraPLL is " << labeling.get_avg() <<", labeling time = " << lt << ", sorting time = " << st << ", cleaning time = " << ct << ", total time = " << lt+st+ct << std::endl;
+    std::cout << "Average label size after gll is " << labeling.get_avg() <<", labeling time = " << lt << ", sorting time = " << st << ", cleaning time = " << ct << ", total time = " << lt+st+ct << std::endl;
     std::cout << labeling.get_avg() <<" " << lt+st+ct << std::endl;
     
 }

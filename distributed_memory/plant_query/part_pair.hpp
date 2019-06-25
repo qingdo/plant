@@ -1,4 +1,10 @@
-
+// This file contains implementation of QDOL data layout
+// for efficient distributed querying.
+//
+//  Author: Qing Dong, Kartik Lakhotia
+//  Email id: qingdong@usc.edu, klakhoti@usc.edu
+//
+//
 #include <vector>
 #include <omp.h>
 #include <cmath>

@@ -1,3 +1,9 @@
+// This file contains implementation of QDOL data layout
+// for efficient distributed querying.
+//
+//  Author: Qing Dong, Kartik Lakhotia
+//  Email id: qingdong@usc.edu, klakhoti@usc.edu
+
 
 #include <vector>
 #include <omp.h>
@@ -50,11 +56,11 @@ public:
         Vertex single_start = start;
         Vertex single_end = start;
         std::vector<int> size_per_vertex = gather_size(curr_labeling, start, end, NUM_THREAD);
-	      if(world_rank==0)	std::cout<<"gather size "<<pid<<" success"<<std::endl;
+	    //if(world_rank==0)	std::cout<<"gather size "<<pid<<" success"<<std::endl;
         int MPI_BUDGET = 650000000;
         do {
             single_end = findLastSend(MPI_BUDGET, size_per_vertex, single_start, start, end, NUM_THREAD);
-	         if(world_rank==0)	std::cout<<"one-time comm range: "<<single_start<<"-"<<single_end<<" partition range"<<start<<"-"<<end<<std::endl;
+	        // if(world_rank==0)	std::cout<<"one-time comm range: "<<single_start<<"-"<<single_end<<" partition range"<<start<<"-"<<end<<std::endl;
 	        std::vector<int>label_list;
 	        std::vector<int>recv_buffer;
 	        parallelLoad (label_list, curr_labeling, single_start, single_end, NUM_THREAD);
@@ -68,7 +74,7 @@ public:
 	    	}
             single_start = single_end;
           } while(single_end < end);
-	 //   std::cout<<"distribute partition "<<pid<<" to node "<<world_rank<<std::endl;
+	      // std::cout<<"4, # labels in partition, "<<pid<<" is "<<world_rank<<std::endl;
 	}
 
 	unsigned int mapPart2Node () {
@@ -86,7 +92,7 @@ public:
 	        for (size_t j=i+1; j<num_parts; j++)
 	        {
 	            query2node[i][j] = nodeId; //assign nodes to overlapping partitions. 
-	            query2node[j][i] = nodeId;                            //to retrieve -> nodeId for (u,v) = mapTable[min(u,v)][max(u,v)-min(u,v)]
+	            query2node[j][i] = nodeId; //to retrieve -> nodeId for (u,v) = mapTable[min(u,v)][max(u,v)-min(u,v)]
 	            node2part[nodeId].first = i;
 	            node2part[nodeId].second = j;
 	            nodeId++;
@@ -114,7 +120,8 @@ public:
 	        distPartition(i);
 	    }
 	    final_labeling.sort(omp_get_max_threads());
-      std::cout<<world_rank<<" ALS "<<final_labeling.get_avg()<<std::endl;
+      	std::cout<<"QDOL # labels in node, "<<world_rank<<", is, "<<final_labeling.get_total()<<std::endl;
+      	std::cout<<"QDOL # cap in node, "<<world_rank<<", is, "<<final_labeling.get_cap()<<std::endl;
 	}
 	
 	//sort query list on basis of allocated node
@@ -128,7 +135,7 @@ public:
 	    wr_offsets.resize(world_size);
 	    unsigned int num_queries = queries.size()/2;
 	    unsigned int num_queries_per_thread = (num_queries-1)/(NUM_THREAD) + 1;
-		 if (world_rank== 0) std::cout<<"start count"<<std::endl;
+		// if (world_rank== 0) std::cout<<"start count"<<std::endl;
 	    reorderMap.resize(num_queries);
 	
 	    #pragma omp parallel num_threads(NUM_THREAD)
@@ -144,16 +151,12 @@ public:
 	                Vertex v = queries[(j<<1) + 1];
 					unsigned part_v = vertex2part(v);
 					unsigned part_u = vertex2part(u);
-			//		if(i == 0)std::cout<<u<<" "<<part_u<<std::endl;
-			//		if(i == 0)std::cout<<v<<" "<<part_v<<std::endl;
-			//		if(i == 0)std::cout<<query2node[part_u][part_v]<<std::endl;
 	                cnts_per_node[i][query2node[part_u][part_v]]+=2; 
 	            }
 	            
 	        }
 	
 	        #pragma omp barrier
-			//std::cout<<"count success"<<std::endl;
 	
 	        //compute offsets for each thread within a block allocated to one node 
 	        #pragma omp for 
@@ -169,8 +172,6 @@ public:
 	
 	        #pragma omp barrier
 			
-			//std::cout<<"thread offset success"<<std::endl;
-	
 	        //compute offsets per node
 	        #pragma omp single
 	        {
@@ -180,7 +181,7 @@ public:
 	        }
 	
 	        #pragma omp barrier
-			if(world_rank==0) std::cout<<"node offset success"<<std::endl;
+			// if(world_rank==0) std::cout<<"node offset success"<<std::endl;
 	
 	        //rearrange queries
 	        #pragma omp for
@@ -201,12 +202,9 @@ public:
 	                temp_queries[wr_addr+1] = v;
 	                cnts_per_node[i][node]+=2;
 					reorderMap[wr_addr>>1] = j;
-			//		if ( j < 100 && i == 0) 
-			//			std::cout<<"query "<<u<<" -> "<<v<<" go to "<< node <<" addr: "<< wr_addr/2 <<" node write offset "<<wr_offsets[node]<<std::endl;
 	            }
 	        }
 	    }
-			if(world_rank==0) std::cout<<"rearrange success"<<std::endl;
 	    //queries.swap(temp_queries); 
 	    cnts.swap(offsets[NUM_THREAD]);
 		return temp_queries;
@@ -226,7 +224,6 @@ public:
 	
 	void query(std::vector<Distance> &dist, std::vector<Vertex> &queries)
 	{
-		//std::cout<<world_rank<<" start query "<<std::endl;
 	    int num_local_queries;
 	    std::vector<Vertex> local_queries;
 	    std::vector<Vertex> reordered_queries;
@@ -247,13 +244,13 @@ public:
 	//		}
 		}
 		double start = omp_get_wtime();	
-	if(world_rank==0)		std::cout<<"reorder succeed"<<std::endl;
+		// if(world_rank==0)		std::cout<<"reorder succeed"<<std::endl;
 		    //send the queries to target nodes
 		MPI_Scatter(&cnts[0], 1, MPI_INT, &num_local_queries, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	//	std::cout<<world_rank<<" local query nums "<<num_local_queries<<std::endl;
 		local_queries.resize(num_local_queries);
 		MPI_Scatterv(&reordered_queries[0], &cnts[0], &displs[0], MPI_UNSIGNED, &local_queries[0], num_local_queries, MPI_UNSIGNED, 0, MPI_COMM_WORLD); 
-  	if(world_rank==0)	std::cout<<"send queries succeed"<<std::endl;
+  		// if(world_rank==0)	std::cout<<"send queries succeed"<<std::endl;
 		
 	    //do label query
 	    batchLocalQuery(temp_dist, local_queries, final_labeling, NUM_THREAD);
@@ -271,7 +268,7 @@ public:
 	    //gather results from remote nodes
 	    MPI_Gatherv(&temp_dist[0], temp_dist.size(), MPI_INT, &dist[0], &cnts[0], &displs[0], MPI_INT, 0, MPI_COMM_WORLD); 
 		double end = omp_get_wtime();
-	if (world_rank == 0)	std::cout<<"part_pair "<<end-start<<" ";
+		//if (world_rank == 0)	std::cout<<"part_pair "<<end-start<<" ";
 	   	if (world_rank == 0) reorderRes(dist, reorderMap); 
 	//	std::cout<<world_rank<<" gather succeed"<<std::endl;
 	}

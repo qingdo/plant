@@ -1,3 +1,10 @@
+// This file implements helper functions for 
+// pre-processing queries (query distribution, 
+// computation, response collection) in a cluster.
+//
+//  Author: Qing Dong, Kartik Lakhotia
+//  Email id: qingdong@usc.edu, klakhoti@usc.edu
+
 #ifndef COMM_FUNC_H
 #define COMM_FUNC_H
 

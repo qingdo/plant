@@ -1,6 +1,10 @@
 // Hub Labels are lists of hubs and distances to them attached to every vertex in a graph.
 // This file contains the class to store labels.
-// Available methods include making a query, write labels to file, read labels from file.
+// Available methods include making a query, write labels to file, read labels from file,
+// merge label tables, clean label tables.
+//
+//  Author: Qing Dong, Kartik Lakhotia
+//  Email id: qingdong@usc.edu, klakhoti@usc.edu
 //
 // Copyright (c) 2014, 2015 savrus
 //

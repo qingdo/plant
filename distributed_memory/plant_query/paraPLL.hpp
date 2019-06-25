@@ -1,5 +1,7 @@
 // Akiba et al. presented a 'pruned labeling' algorithm to build Hierarchical Hub Labels from a vertex order.
-// This file contains Akiba et. al. algorithm implementation
+// This file contains a distributed implementation of Akiba et. al. algorithm described in 
+// "ParaPLL: Fast Parallel Shortest-Path Distance Query on Large-scale Weighted Graphs"
+// by Qiu et al.
 //
 // Copyright (c) 2014, 2015 savrus
 //

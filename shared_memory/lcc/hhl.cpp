@@ -1,10 +1,9 @@
-/**
- * Author: Qing Dong, Kartik Lakhotia
- * Email id: qingdong@usc.edu, klakhoti@usc.edu
- * Date: 04-May-2018
- *
- * This code implements the parallelization of the pruned landmark labeling algorithm which is the second phase of the hhl algorithm (Akiba et al. 2014). 
- */
+// This file contains implementation of Label Construction and 
+// Cleaning algorithm which is an optimistic parallelization of PLL by Akiba et al.
+// Redundant labels are pruned to obtain canonical labeling
+//
+//  Author: Qing Dong, Kartik Lakhotia
+//  Email id: qingdong@usc.edu, klakhoti@usc.edu
 
 #include "labeling.hpp"
 #include "ordering.hpp"

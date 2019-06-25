@@ -47,18 +47,7 @@ public:
         label_v(n, std::vector< std::vector<Vertex> >(2)),
         label_d(n, std::vector< std::vector<Distance> >(2)),
         n(n),
-        lck(new bool[n]()) {
-        for (int i = 0; i<n ;i++) {
-//            label_v[i][0].reserve(1024);
-//            label_v[i][1].reserve(1024);
-//            label_d[i][0].reserve(1024);
-//            label_d[i][1].reserve(1024);}
-            label_v[i][0].reserve(0);
-            label_v[i][1].reserve(0);
-            label_d[i][0].reserve(0);
-            label_d[i][1].reserve(0);}
-        }
-
+        lck(new bool[n]()) {}
     // Find u-v distance
     Distance query(Vertex u, Vertex v, bool f = true) {
         Distance r = infty;
@@ -82,14 +71,12 @@ public:
     }
 
     
-    inline bool clean_cover(Vertex u, Vertex v, unsigned int f, Distance d=infty, size_t hub_order=0, size_t label_loc=0) {
+    inline bool clean_cover(Vertex u, Vertex v, unsigned int f, Distance d=infty, size_t hub_order=0) {
         for (size_t i=0, j=0; i < label_v[u][f].size() && j < label_v[v][!f].size();) {
             if (label_v[u][f][i] >= hub_order || label_v[v][!f][j] >= hub_order) return false;
             if (label_v[u][f][i] == label_v[v][!f][j]) {
                 if (d >= label_d[u][f][i++] + label_d[v][!f][j++]) return true;
             } 
-            //i += label_v[u][f][i] < label_v[v][!f][j];
-            //j += label_v[u][f][i] >= label_v[v][!f][j];
             else if (label_v[u][f][i] < label_v[v][!f][j]) ++i;
             else ++j;
         }
@@ -105,7 +92,7 @@ public:
             size_t hub_order = label_v[v][side][i];
             Vertex hub =  order[hub_order];
             Distance hub_dist = label_d[v][side][i];
-            if (!clean_cover(hub, v, side, hub_dist, hub_order, i)); 
+            if (!clean_cover(hub, v, side, hub_dist, hub_order)); 
             {
                 temp_v.push_back(hub_order);
                 temp_d.push_back(hub_dist);
@@ -164,6 +151,12 @@ public:
         for (Vertex v = 0; v < n; ++v)
             total += label_v[v][0].size() + label_v[v][1].size();
         return static_cast<double>(total)/n/2;
+    }
+    long long get_total() const {
+        long long total = 0;
+        for (Vertex v = 0; v < n; ++v)
+            total += label_v[v][0].size() + label_v[v][1].size();
+        return total;
     }
 
     // Write labels to file

@@ -187,7 +187,6 @@ void run_paraPLL(Graph* g, std::vector<Vertex> &order, std::vector<Vertex> &revM
         lt += le-ls;
          ////////////////// sort //////////////////////
         local_labeling.sort(NUM_THREAD);
-        lt = le-ls;
 
 
         ///////////////// cleaning ///////////////////

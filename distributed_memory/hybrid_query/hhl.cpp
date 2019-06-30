@@ -76,22 +76,19 @@ int main(int argc, char** argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    //int num_queries = 10000000;
     int num_queries = 1000000;
-    //remove common labeling
     std::cout<<"QFDL # labels in node, "<<world_rank<<", is, "<<labeling.get_total()<<std::endl;
-    std::cout<<"DFDL # cap in node, "<<world_rank<<", is, "<<labeling.get_cap()<<std::endl;
+    std::cout<<"QFDL # cap in node, "<<world_rank<<", is, "<<labeling.get_cap()<<std::endl;
 	if(!read_query) {
 		queries.resize(num_queries*2);
 		hl::generate_query(queries, num_queries, N, NUM_THREAD);
 	}
 	std::vector<hl::Distance> dist(num_queries);
 	hl::query(dist, queries, labeling, query_mode, NUM_THREAD); 
-//		std::cout<<std::endl;
-//	if (world_rank == 0) {
-//		for (unsigned i = 0; i < dist.size(); i++){
-//			std::cout<<dist[i]<<std::endl;
-//		}
-//	}
+	if (world_rank == 0) {
+		for (unsigned i = 0; i < dist.size(); i++){
+			std::cout<<dist[i]<<std::endl;
+		}
+	}
     return 0;
 }

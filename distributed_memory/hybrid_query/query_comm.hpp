@@ -198,6 +198,27 @@ std::vector<int> gatherAllLabelsQuery (const std::vector<int> &label_list, std::
 
 } 
 
+void allToAllLabels (Labeling &dist_labels, Labeling &shared_labels, int world_size, int world_rank, int NUM_THREAD)
+{
+    int MPI_BUDGET = 650000000;
+	Vertex start = 0;
+	Vertex end = dist_labels.n;
+	Vertex N = dist_labels.n;
+    Vertex single_start = start;
+    Vertex single_end = start;
+    std::vector<int> size_per_vertex = gather_size(dist_labels, start, end, NUM_THREAD);
+    do {
+        single_end = findLastSend(MPI_BUDGET, size_per_vertex, single_start, start, end, NUM_THREAD);
+        //std::cout<<"single_end: "<<single_end<<std::endl;
+		std::vector<int>label_list;
+        std::vector<int>recv_buffer;
+        parallelLoad (label_list, dist_labels, single_start, single_end, NUM_THREAD);
+        gatherAllLabelsQuery(label_list, recv_buffer, world_size, world_rank);
+      	loadFromRecvBuffer(recv_buffer, shared_labels);
+        single_start = single_end;
+      } while(single_end < end);
+}
+
 
 }
 

@@ -61,33 +61,29 @@ bool query(std::vector<Distance> &dist, std::vector<Vertex> &queries, Labeling &
 	double query_start = 0, query_end = 0, query_time = 0;
     if (query_mode == 0)    { //mode 0 Latency QLSN - full labeling is already in one machine
         Labeling all_labels(N);
-		std::vector<int> label_list;
-		std::vector<int> recv_buffer;
-        parallelLoad(label_list, labels, 0, N, NUM_THREAD);
-        gatherAllLabelsQuery(label_list, recv_buffer, world_size, world_rank);
-        loadFromRecvBuffer(recv_buffer, all_labels);
+	//	std::vector<int> label_list;
+	//	std::vector<int> recv_buffer;
+    //    parallelLoad(label_list, labels, 0, N, NUM_THREAD);
+    //    gatherAllLabelsQuery(label_list, recv_buffer, world_size, world_rank);
+    //    loadFromRecvBuffer(recv_buffer, all_labels);
+    	allToAllLabels(labels, all_labels, world_size, world_rank, NUM_THREAD);
         all_labels.sort(NUM_THREAD);
-        std::cout<<"all label size "<<all_labels.get_avg()<<std::endl;
+        if(world_rank==0) std::cout<<"all label size "<<all_labels.get_avg()<<std::endl;
         std::vector<Vertex> single_queries(2);
         query_start = omp_get_wtime();
         for (int i=0;i<queries.size()/2;i++) {
             single_queries[0] = queries[i*2];
             single_queries[1] = queries[i*2+1];
-            if(world_rank==0) singleLocalQuery(dist[i], single_queries, labels);
+            if(world_rank==0) singleLocalQuery(dist[i], single_queries, all_labels);
         }
         query_end = omp_get_wtime();
         if (world_rank==0) std::cout<<"QLSN latency: "<<query_end - query_start<<std::endl;
     }
     else if (query_mode == 1)    { //mode1 Throughput QLSN - gather labels in one machine and do query
-        std::vector<int> label_list;
-        std::vector<int> recv_buffer;
-        int N = labels.n;
         Labeling all_labels(N);
-        parallelLoad(label_list, labels, 0, N, NUM_THREAD);
-        gatherAllLabelsQuery(label_list, recv_buffer, world_size, world_rank);
-        loadFromRecvBuffer(recv_buffer, all_labels);
+    	allToAllLabels(labels, all_labels, world_size, world_rank, NUM_THREAD);
         all_labels.sort(NUM_THREAD);
-        std::cout<<"all label size "<<all_labels.get_avg()<<std::endl;
+        if(world_rank==0) std::cout<<"all label size "<<all_labels.get_avg()<<std::endl;
         query_start = omp_get_wtime();
         if(world_rank==0) batchLocalQuery(dist, queries, all_labels, NUM_THREAD);
         query_end = omp_get_wtime();

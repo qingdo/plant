@@ -200,18 +200,6 @@ hl::Labeling common_labeling(N);
 omp_set_dynamic(0);
 omp_set_num_threads(NUM_THREAD);
 
-// set budgets on memory for recv_buffer and common_labels//
-//set the threshold for switching from phase1 to phase2 - depends on graph/number of machines//
-//The code assumes that MEM_BUDGET is greater than COMMON_LABEL_BUDGET//
-   // MEMORYSTATUS MemStat;
-   // memset(&MemStat, 0, sizeof(MemStat));
-   // ::GlobalMemoryStatus(&MemStat);
-   //  std::cout << "Length of structure: " << MemStat.dwLength
-   //         << std::endl
-   //         << "Memory usage: " << MemStat.dwMemoryLoad
-   //         << " %" << std::endl
-   //         << "Physical memory: " << MemStat.dwTotalPhys / 1024
-   //         << " KB" << std::endli;
     lCounts MEM_BUDGET = 650000000; //<2 GB
     lCounts COMMON_LABEL_BUDGET = std::min( (unsigned) (N*2*16), (unsigned) (1000000 * common_label_budget));
     Vertex PHASE_SWITCH_THRESH = N;
@@ -519,10 +507,27 @@ omp_set_num_threads(NUM_THREAD);
     float avg_size = labeling.get_avg();
     float sum_size;
     MPI_Reduce(&avg_size, &sum_size, 1, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
-    if(world_rank==0) std::cout << "Final common label size is " << common_labeling.get_avg() << std::endl;
+    if(world_rank==0) std::cout << "global label size is " << labeling.get_avg() << std::endl;
     if(world_rank==0) std::cout << "Final total global label size is " <<common_labeling.get_avg()+sum_size << std::endl;
     if(world_rank==0) std::cout << "Time cost  " << total_time << std::endl;
     if(world_rank==0) std::cout << "Clean time  " << clean_time << std::endl;
+    remove_common(labeling, common_labeling, NUM_THREAD, world_rank, world_size);
+	common_labeling.clear();
+	labeling.sort(NUM_THREAD);
+    if(world_rank==0) std::cout << "Final global label size is " <<labeling.get_avg()<< std::endl;
+//	Vertex v1 = 451873;
+//	Vertex v2 = 1736581;
+//	for (int side = 0; side < 2; side++) {
+//		for (int i = 0; i < labeling.label_v[v1][side].size(); i++) {
+//			std::cout<<v1<<"'s "<<side<<" side label: "<<labeling.label_v[v1][side][i]<<" "<<labeling.label_d[v1][side][i]<<std::endl;
+//		}
+//	}
+//	for (int side = 0; side < 2; side++) {
+//		for (int i = 0; i < labeling.label_v[v2][side].size(); i++) {
+//			std::cout<<v2<<"'s "<<side<<" side label: "<<labeling.label_v[v2][side][i]<<" "<<labeling.label_d[v2][side][i]<<std::endl;
+//		}
+//	}
+
 
 }
 

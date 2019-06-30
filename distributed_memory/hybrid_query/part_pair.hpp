@@ -22,13 +22,13 @@ class PartPair{
 	unsigned world_size;
 	unsigned world_rank;
 	unsigned NUM_THREAD;
-	unsigned n;
 	std::vector< std::vector<int> > query2node;
 	std::vector< std::pair<Vertex, Vertex> > node2part;
 	Labeling &curr_labeling;
 	Labeling final_labeling;
 
 public:
+	unsigned n;
 	PartPair(Labeling & curr_labeling, unsigned world_size, unsigned world_rank, unsigned NUM_THREAD):
 		world_size(world_size),
 		world_rank(world_rank),
@@ -56,21 +56,20 @@ public:
         Vertex single_start = start;
         Vertex single_end = start;
         std::vector<int> size_per_vertex = gather_size(curr_labeling, start, end, NUM_THREAD);
-	    //if(world_rank==0)	std::cout<<"gather size "<<pid<<" success"<<std::endl;
+//	    if(world_rank==0)	std::cout<<"gather size "<<pid<<" success"<<std::endl;
         int MPI_BUDGET = 650000000;
         do {
             single_end = findLastSend(MPI_BUDGET, size_per_vertex, single_start, start, end, NUM_THREAD);
-	        // if(world_rank==0)	std::cout<<"one-time comm range: "<<single_start<<"-"<<single_end<<" partition range"<<start<<"-"<<end<<std::endl;
+//	        if(world_rank==0)	std::cout<<"one-time comm range: "<<single_start<<"-"<<single_end<<" partition range"<<start<<"-"<<end<<std::endl;
 	        std::vector<int>label_list;
 	        std::vector<int>recv_buffer;
 	        parallelLoad (label_list, curr_labeling, single_start, single_end, NUM_THREAD);
-	      //  if(world_rank==0)	std::cout<<"load partition "<<pid<<" success"<<std::endl;
+//	        if(world_rank==0)	std::cout<<"load partition "<<pid<<" success"<<std::endl;
 	        gatherAllLabelsQuery(label_list, recv_buffer, world_size, world_rank);
-	      //  if(world_rank==0)	std::cout<<"gather partition "<<pid<<" success"<<std::endl;
-	    	//	std::cout<<"gather partition "<<pid<<" success"<<std::endl;
+//	        if(world_rank==0)	std::cout<<"gather partition "<<pid<<" success"<<std::endl;
 	        if (pid==node2part[world_rank].first || pid==node2part[world_rank].second) {
 	        	loadFromRecvBuffer(recv_buffer, final_labeling);
-	    	//	std::cout<<"distribute partition "<<pid<<" to node "<<world_rank<<std::endl;
+//	    	if (world_rank==0) std::cout<<"distribute partition "<<pid<<" to node "<<world_rank<<std::endl;
 	    	}
             single_start = single_end;
           } while(single_end < end);
@@ -114,14 +113,16 @@ public:
 	unsigned int distAllPartitions ()
 	{
 		mapPart2Node();
+//        if (world_rank==0) std::cout << "mapped partitions to nodes" << std::endl;
 	    part_size = (n-1)/num_parts + 1;
 	    for (unsigned int i=0; i<num_parts; i++)
 	    { 
 	        distPartition(i);
+//            if (world_rank==0) std::cout << "distributed partition " << i << std::endl;
 	    }
 	    final_labeling.sort(omp_get_max_threads());
-      	std::cout<<"QDOL # labels in node, "<<world_rank<<", is, "<<final_labeling.get_total()<<std::endl;
-      	std::cout<<"QDOL # cap in node, "<<world_rank<<", is, "<<final_labeling.get_cap()<<std::endl;
+//      	std::cout<<"QDOL # labels in node, "<<world_rank<<", is, "<<final_labeling.get_total()<<std::endl;
+//      	std::cout<<"QDOL # cap in node, "<<world_rank<<", is, "<<final_labeling.get_cap()<<std::endl;
 	}
 	
 	//sort query list on basis of allocated node
@@ -236,12 +237,12 @@ public:
 		if (world_rank==0) {	
 			//std::cout<<"start reorder queries"<<std::endl;
 		    reordered_queries = reorderQueryList(queries, cnts, displs, reorderMap);
-	//		std::cout<<"reorder queries succeed"<<std::endl;
-	//		for (int i = 0; i<world_size; i++) {
-	//			std::cout<<"number of quries distributed to node "<<i<<" is "<<cnts[i]<<std::endl;
-	//			std::cout<<"offset distributed to node "<<i<<" is "<<displs[i]<<std::endl;
-	//			//std::cout<<"example of "<<i<<" is "<<queries[displs[i]]<<" "<<queries[displs[i]+1]<<std::endl;
-	//		}
+//			std::cout<<"reorder queries succeed"<<std::endl;
+			for (int i = 0; i<world_size; i++) {
+//				std::cout<<"number of queries distributed to node "<<i<<" is "<<cnts[i]<<std::endl;
+				//std::cout<<"offset distributed to node "<<i<<" is "<<displs[i]<<std::endl;
+				//std::cout<<"example of "<<i<<" is "<<queries[displs[i]]<<" "<<queries[displs[i]+1]<<std::endl;
+			}
 		}
 		double start = omp_get_wtime();	
 		// if(world_rank==0)		std::cout<<"reorder succeed"<<std::endl;
@@ -250,10 +251,15 @@ public:
 	//	std::cout<<world_rank<<" local query nums "<<num_local_queries<<std::endl;
 		local_queries.resize(num_local_queries);
 		MPI_Scatterv(&reordered_queries[0], &cnts[0], &displs[0], MPI_UNSIGNED, &local_queries[0], num_local_queries, MPI_UNSIGNED, 0, MPI_COMM_WORLD); 
-  		// if(world_rank==0)	std::cout<<"send queries succeed"<<std::endl;
+
+		double scatterEnd = omp_get_wtime();
+//  		if(world_rank==0)	std::cout<<"send queries succeed in time "<<scatterEnd-start<<std::endl;
 		
 	    //do label query
 	    batchLocalQuery(temp_dist, local_queries, final_labeling, NUM_THREAD);
+
+		double localQueryEnd = omp_get_wtime();
+//  		if(world_rank==0)	std::cout<<"local queries succeed in time "<<localQueryEnd-scatterEnd<<std::endl;
   	//	std::cout<<world_rank<<" local queries succeed"<<std::endl;
 //		if (world_rank != 3) std::cout<<"example of local query of node "<<world_rank<<" is Query("<<local_queries[0]<<", "<<local_queries[1]<<") = "<<temp_dist[0]<<std::endl;
 	
@@ -268,10 +274,46 @@ public:
 	    //gather results from remote nodes
 	    MPI_Gatherv(&temp_dist[0], temp_dist.size(), MPI_INT, &dist[0], &cnts[0], &displs[0], MPI_INT, 0, MPI_COMM_WORLD); 
 		double end = omp_get_wtime();
-		//if (world_rank == 0)	std::cout<<"part_pair "<<end-start<<" ";
+//		if (world_rank == 0) std::cout<<"part_pair "<<end-start<<" ";
 	   	if (world_rank == 0) reorderRes(dist, reorderMap); 
 	//	std::cout<<world_rank<<" gather succeed"<<std::endl;
 	}
+
+
+    int singleQuery(Distance &dist, std::vector<Vertex> &queries)
+    {
+        MPI_Status stat;
+        int num_queries = 2;
+        if (world_rank==0) {
+            if (queries[0]>n){
+                for (int i=1; i<world_size; i++)
+                    MPI_Send(&queries[0], num_queries, MPI_INT, i, 0, MPI_COMM_WORLD);
+            }
+            else{
+                unsigned part_u = vertex2part(queries[0]);
+                unsigned part_v = vertex2part(queries[1]);
+                int tgt_node = query2node[part_u][part_v];
+				if (tgt_node == 0)
+					singleLocalQuery(dist, queries, final_labeling);
+				else
+				{
+                	MPI_Send(&queries[0], num_queries, MPI_INT, tgt_node, 0, MPI_COMM_WORLD);
+                	MPI_Recv(&dist, num_queries, MPI_INT, tgt_node, 0, MPI_COMM_WORLD, &stat);
+				}
+            }
+        }
+        else {
+            queries.resize(num_queries);
+            MPI_Recv(&queries[0], num_queries, MPI_INT, 0, 0, MPI_COMM_WORLD, &stat); 
+            if (queries[0] > n)
+                return -1;
+            singleLocalQuery(dist, queries, final_labeling);  
+            MPI_Send(&dist, 1, MPI_INT, 0, 0, MPI_COMM_WORLD); 
+        }
+        return 0;
+    }
+
+
 	bool verify(std::vector<Vertex> &queries) {
 		int q = queries.size() / 2;
 		bool res = true;

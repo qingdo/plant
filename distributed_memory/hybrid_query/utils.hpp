@@ -289,4 +289,18 @@ void moveLocalToGlobal(Labeling &global_labeling, Labeling &local_labeling, std:
     }
 }
 
+void remove_common(Labeling &labeling, Labeling &common_labeling, int NUM_THREAD, int world_rank, int world_size) {
+    Vertex n = labeling.n;
+	#pragma omp parallel for num_threads (NUM_THREAD) schedule (dynamic, 512)
+    for (Vertex v= 0; v < n; ++v) {
+        for (int side = 0; side < 2; ++side) {
+          for (int i = 0; i < common_labeling.label_v[v][side].size(); i++) {
+            if (common_labeling.label_v[v][side][i]%world_size==world_rank) {
+				labeling.add_lockfree(v, side, common_labeling.label_v[v][side][i], common_labeling.label_d[v][side][i]); 
+            }
+          }
+        }
+    }
+}
+
 }

@@ -14,16 +14,36 @@
 
 namespace hl {
 
+void singleLocalQuery(Distance &dist, std::vector<Vertex> &queries, Labeling &labels)
+{
+    for (size_t ii=0; ii<queries.size(); ii+=2)
+        dist = labels.query(queries[ii], queries[ii+1]);
+}
 
 void batchLocalQuery(std::vector<Distance> &dist, std::vector<Vertex> &queries, Labeling &labels, int NUM_THREAD)
 {
-    dist.resize(queries.size()>>1);
-    #pragma omp parallel for num_threads(NUM_THREAD)
+    dist.resize(queries.size()/2);
+//    std::cout<<NUM_THREAD<<std::endl;
+    #pragma omp parallel for num_threads(NUM_THREAD) schedule (dynamic, NUM_THREAD*2)
     for (size_t ii=0; ii<queries.size(); ii+=2)
         dist[ii>>1] = labels.query(queries[ii], queries[ii+1]);
 }
 
  
+void singleDistQuery(Distance &dist, std::vector<Vertex> &queries, Labeling &labels, int world_rank, int world_size)
+{
+    int num_queries = 2;
+    Distance local_dist;
+    if (world_rank != 0)
+        queries.resize(num_queries);    
+
+
+    MPI_Bcast(&queries[0], num_queries, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
+
+    singleLocalQuery(local_dist, queries, labels);
+
+    MPI_Reduce(&local_dist, &dist, 1, MPI_INT, MPI_MIN, 0, MPI_COMM_WORLD);
+}
 
 //mode3 - some labels on every machine
 void batchDistQuery(std::vector<Distance> &dist, std::vector<Vertex> &queries, Labeling &labels, int world_rank, int world_size, int NUM_THREAD)

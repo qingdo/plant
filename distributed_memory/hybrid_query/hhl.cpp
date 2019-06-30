@@ -25,11 +25,9 @@ int main(int argc, char** argv)
     std::vector<unsigned int> order;
     int query_mode = 5;
     unsigned int i=0;
-   // for(unsigned int argi=0;argi<argc;argi++)
-   // {
-   //     printf("%s ",argv[argi]);
-   // }
-   // std::cout<<std::endl;
+	bool read_query = false;
+	std::vector<hl::Vertex> queries;
+	
     for (unsigned int i=0; i<argc; i++)
     {
         if (strcmp(argv[i], "-o") == 0) // vertex ordering
@@ -40,12 +38,14 @@ int main(int argc, char** argv)
             first_sync=std::atof(argv[i+1]);
         if (strcmp(argv[i], "-cb") == 0) // common label budget
             common_label_budget=std::atof(argv[i+1]);
-        if (strcmp(argv[i], "-ps") == 0) // phasw switch ratio (tree_size/label_size)
+        if (strcmp(argv[i], "-ps") == 0) // phase switch ratio (tree_size/label_size)
             phase_switch=std::atof(argv[i+1]);
         if (strcmp(argv[i], "-b") == 0) // baseline: paraPLL
             baseline=std::stoi(argv[i+1]);
-        if (strcmp(argv[i], "-qm") == 0) // baseline: paraPLL
+        if (strcmp(argv[i], "-qm") == 0) // query mode
             query_mode=std::stoi(argv[i+1]);
+        if (strcmp(argv[i], "-rq") == 0) // read query from file
+            read_query=hl::load_query(queries, argv[i+1]);
         if (strcmp(argv[i], "-g") == 0) // graph files
         {
             if (!gDij.read(argv[i+1])) {
@@ -76,30 +76,22 @@ int main(int argc, char** argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    int num_queries = 10000000;
-    //int num_queries = 100000;
+    //int num_queries = 10000000;
+    int num_queries = 1000000;
     //remove common labeling
-    labeling.remove_common(NUM_THREAD, world_rank, world_size);
     std::cout<<"QFDL # labels in node, "<<world_rank<<", is, "<<labeling.get_total()<<std::endl;
     std::cout<<"DFDL # cap in node, "<<world_rank<<", is, "<<labeling.get_cap()<<std::endl;
-	std::vector<hl::Vertex> queries(num_queries*2);
-	hl::generate_query(queries, num_queries, N, NUM_THREAD);
+	if(!read_query) {
+		queries.resize(num_queries*2);
+		hl::generate_query(queries, num_queries, N, NUM_THREAD);
+	}
 	std::vector<hl::Distance> dist(num_queries);
 	hl::query(dist, queries, labeling, query_mode, NUM_THREAD); 
-
-//    for (unsigned int i=0; i<argc; i++) {
-//        if (strcmp(argv[i], "-l") == 0)  {//if write to a file
-//		
-//			std::string dataset(argv[i+1]);
-//			std::string id = std::to_string(world_rank);
-//			std::string size = std::to_string(world_size);
-//			std::string name = dataset+"_"+id+"_"+size; 
-//			char name_char[name.length()+1]; 
-//			strcpy(name_char, name.c_str());
-//            labeling->write(name_char);
+//		std::cout<<std::endl;
+//	if (world_rank == 0) {
+//		for (unsigned i = 0; i < dist.size(); i++){
+//			std::cout<<dist[i]<<std::endl;
 //		}
-//        if (strcmp(argv[i], "-qr") == 0) //if write query resutlt to a file
-//            hl::write_result(dist, argv[i+1]);
-//    }
+//	}
     return 0;
 }

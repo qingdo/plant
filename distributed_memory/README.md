@@ -29,5 +29,5 @@ The common label budget, phase switch threshold, number of threads and query mod
 1. common label budget: 100M labels
 2. phase switch threshold: 1024
 3. Number of threads: 16
-4. query mode: 5 (query on distributed labels with two different layouts: QFDL and QDOL and compare the time, the code generates 10M randoms queries)`
+4. query mode: 5 
 

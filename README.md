@@ -1,11 +1,7 @@
 # Introduction #
 This is the implementation of hub labeling algorithms developed by [Qing Dong](https://github.com/DongQing1996) and [Kartik Lakhotia](https://github.com/kartiklakhotia). We provided the implementation of four algorithms as below. Please go to the corresponding folder to see detailed introduction and instructions for each algorithm. All four algorithms take two inputs, one is the graph file (graph topology, in DIMACS, METIS, SNAP or edgelist format) and the other one is the ranking function (a total ordering on all vertices). 
-* In shared memory platform (shared\_memory)
-	1.  Label Construction and Cleaning (lcc)
-	2.  Global Local Labeling (gll)
-* In distributed platform (distributed\_memory)
-	1.  Prune Labels and Not Trees (plant)
-	2.  Hybrid algorithm of plant and Distributed GLL (hybrid)
+* In shared memory platform (shared\_memory), Global Local Labeling
+* In distributed platform (distributed\_memory), Hybrid algorithm of plant and Distributed GLL
 	
 # Datasets #
 We provided four datasets for testing. They are as following. Please go to corrsponding folder to see running instructions for each algorithm. 

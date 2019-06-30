@@ -150,7 +150,6 @@ void run_paraPLL(Graph* g, std::vector<Vertex> &order, std::vector<Vertex> &revM
 
     ls = omp_get_wtime();
     while (cnt<2*N) {
-        //unsigned int label_sum = (cnt ==0)? label_limit:0; 
         unsigned int label_sum = 0; 
 
         //clear the local labeling before start
@@ -164,7 +163,7 @@ void run_paraPLL(Graph* g, std::vector<Vertex> &order, std::vector<Vertex> &revM
             unsigned int label_sum_thread=0;
 
             while (true) {
-                unsigned int r = __sync_fetch_and_add(&cnt, 1);
+                unsigned int r = __sync_fetch_and_add(&cnt, 2);
                 if (r>=2*N)
                 {
                     __sync_fetch_and_add(&label_sum, label_sum_thread);
@@ -173,6 +172,9 @@ void run_paraPLL(Graph* g, std::vector<Vertex> &order, std::vector<Vertex> &revM
                 size_t root = r/2;
                 bool side = ((r % 2) == 1);
                 unsigned int label_count = ak[th].iteration_gll(root, side, lck, order, revMap, labeling, local_labeling);
+                label_sum_thread+=label_count;
+                side = ((r % 2) == 0);
+                label_count = ak[th].iteration_gll(root, side, lck, order, revMap, labeling, local_labeling);
                 label_sum_thread+=label_count;
 
                 if(label_sum_thread>N/32) {

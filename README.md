@@ -1,5 +1,5 @@
 # Introduction #
-This is the implementation of hub labeling algorithms developed by [Qing Dong](https://github.com/DongQing1996) and [Kartik Lakhotia](https://github.com/kartiklakhotia). We provided the implementation of four algorithms as below. Please go to the corresponding folder to see detailed introduction and instructions for each algorithm. All four algorithms take two inputs, one is the graph file (graph topology, in DIMACS, METIS, SNAP or edgelist format) and the other one is the ranking function (a total ordering on all vertices). 
+This is the implementation of paper [Planting Trees for scalable and efficient Canonical Hub Labeling](https://arxiv.org/abs/1907.00140). The codes are developed by [Qing Dong](https://github.com/DongQing1996) and [Kartik Lakhotia](https://github.com/kartiklakhotia). We provide efficient Canonical Hub Labeling algorithms on both shared-memory and distributed-memory platform. Please go to the corresponding folder to see detailed introduction and instructions for each algorithm. All implementations take two inputs, one is the graph file (graph topology, in DIMACS, METIS, SNAP or edgelist format) and the other one is the ranking function (a total ordering on all vertices). 
 * In shared memory platform (shared\_memory), Global Local Labeling
 * In distributed platform (distributed\_memory), Hybrid algorithm of plant and Distributed GLL
 	
@@ -23,5 +23,5 @@ We also used some other datasets for testing. We do not push them on github beca
 ## Ordering ##
 We used [betweeness-based ordering](http://degroup.cis.umac.mo/sspexp/) for road networks and [degree-based ordering](https://github.com/savrus/hl) for scale-free networks. 
 
-##Acknowledgements##
+## Acknowledgements ##
 Some basic functions in our code are based on the implementation given in [savrus's code](https://github.com/savrus/hl)

@@ -10,11 +10,11 @@ make
 #### Run ####
 #### Regular environment ####
 ```
-mpirun --np=<NUM_NODES> ./hhl -g <graphFile> -o -orderFile <orderFile> -p <numThreads> -cb <common label budget> -ps <phase swith threshlod> -qm <qery mode>
+mpirun --np=<NUM_NODES> ./hhl -g <graphFile> -o <orderFile> -p <numThreads> -cb <common label budget> -ps <phase swith threshlod> -qm <qery mode>
 ```
 #### Slurm environment ####
 ```
-srun --ntasks=<NUM_NODES>  -c <CPUsPerTask> ./hhl -g <graphFile> -o -orderFile <orderFile> -p <numThreads> -cb <common label budget> -ps <phase swith threshlod> -qm <query mode>
+srun --ntasks=<NUM_NODES>  -c <CPUsPerTask> ./hhl -g <graphFile> -o <orderFile> -p <numThreads> -cb <common label budget> -ps <phase swith threshlod> -qm <query mode>
 ```
 
 #### Query Modes ####

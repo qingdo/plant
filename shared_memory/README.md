@@ -8,7 +8,7 @@ make
 ```
 #### Run ####
 ```
-./hhl -g <graphFile> -o -orderFile <orderFile> -p <numThreads> 
+./hhl -g <graphFile> -o <orderFile> -p <numThreads> 
 ```
 #### Paramemters ####
 The number of threads is optional. The default values are:

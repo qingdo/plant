@@ -37,6 +37,11 @@ struct Order {
     static bool write(char *filename, std::vector<Vertex> &order) {
         std::ofstream file;
         file.open(filename);
+        if (!file.is_open())
+        {
+            std::cout << "ERROR: couldn't open (write) order file named " << filename << std::endl;
+            exit(1);
+        }
         file << order.size() << std::endl;
         for (size_t i = 0; i < order.size(); ++i) file << order[i] << std::endl;
         file.close();
@@ -47,6 +52,11 @@ struct Order {
     static bool read(char *filename, std::vector<Vertex> &order) {
         std::ifstream file;
         file.open(filename);
+        if (!file.is_open())
+        {
+            std::cout << "ERROR: couldn't open order file named " << filename << std::endl;
+            exit(1);
+        }
         size_t s = 0;
         file >> s;
         order.resize(s);

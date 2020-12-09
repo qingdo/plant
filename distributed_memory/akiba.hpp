@@ -188,17 +188,17 @@ Akiba(Graph &g) : BasicDijkstra(g), label_tmp(g.get_n(), infty), is_dirty_tmp(g.
 
 //void run_paraPLL(Graph* g, std::vector<Vertex> &order, Labeling &labeling, float sync, int NUM_THREAD) {
 void run(Graph* g, std::vector<Vertex> &order, std::vector<unsigned> &rev_map, Labeling &labeling, float sync, float common_label_budget, float phase_switch, int NUM_THREAD) {
-int N=order.size();
-labeling.clear();
-std::vector<int> label_list;
-hl::Labeling local_labeling(N);
-hl::Labeling common_labeling(N);
-
-// set the number of threads//
-//no need to pass it to each and every function//
-//    std::cout << " labeling start   "<<std::endl;
-omp_set_dynamic(0);
-omp_set_num_threads(NUM_THREAD);
+    int N=order.size();
+    labeling.clear();
+    std::vector<int> label_list;
+    hl::Labeling local_labeling(N);
+    hl::Labeling common_labeling(N);
+    
+    // set the number of threads//
+    //no need to pass it to each and every function//
+    //    std::cout << " labeling start   "<<std::endl;
+    omp_set_dynamic(0);
+    omp_set_num_threads(NUM_THREAD);
 
     lCounts MEM_BUDGET = 650000000; //<2 GB
     lCounts COMMON_LABEL_BUDGET = std::min( (unsigned) (N*2*16), (unsigned) (1000000 * common_label_budget));
@@ -209,7 +209,7 @@ omp_set_num_threads(NUM_THREAD);
     //First phase - no pruning
     bool do_plant               = true;
     //<UPDATE> flag to indicate state in phase1
-    bool switch_compute     	= true; //haven't found the dynamic switch point yet
+    bool switch_compute         = true; //haven't found the dynamic switch point yet
     //Initial labels into common labeling
     bool COMM_DONE = false;
 
@@ -233,7 +233,7 @@ omp_set_num_threads(NUM_THREAD);
     //<UPDATE>create window for put//
     //std::cout << " before window   "<<world_size<<std::endl;
 
-   	int *local_phase_sync = new int [1](); //a local thread crossed phase switch thresh
+    int *local_phase_sync = new int [1](); //a local thread crossed phase switch thresh
     int *global_phase_sync;                //a remote thread crossed phase switch thresh
     MPI_Alloc_mem(sizeof(int)*1, MPI_INFO_NULL, &global_phase_sync);
     local_phase_sync[0] = 0;
@@ -254,10 +254,10 @@ omp_set_num_threads(NUM_THREAD);
 
     // store previous synced value as well//
     Vertex sync_thres, prev_sync_thres;
-    sync_thres = std::max((int)(N * sync), world_size*NUM_THREAD);
-    sync_thres = std::min(sync_thres, PHASE_SWITCH_THRESH);
+    //sync_thres = std::max((int)(N * sync), world_size*NUM_THREAD);
+    //sync_thres = std::min(sync_thres, PHASE_SWITCH_THRESH);
     sync_thres = world_size*NUM_THREAD;
-    sync_thres = N;
+    //sync_thres = N;
     prev_sync_thres = 0;
 
 
@@ -272,7 +272,6 @@ omp_set_num_threads(NUM_THREAD);
     int cnt = world_rank;
 
     while (cnt < N) {
-        //if(world_rank==0) std::cout << " Threshold =  "<<sync_thres<<std::endl;
         // individual labels per hub//
         std::vector<int> labels_per_hub (sync_thres-prev_sync_thres,0);
 
@@ -282,12 +281,12 @@ omp_set_num_threads(NUM_THREAD);
             int tid = omp_get_thread_num();
             size_t local_cnt = __sync_fetch_and_add(&cnt, world_size);
             unsigned thread_sum = 0;
-   			int *put_tmp = new int [1](); //avoid the data race by using local_phase_switch
-			put_tmp[0] = 0;
-			bool get_tmp = false;
+            int *put_tmp = new int [1](); //avoid the data race by using local_phase_switch
+            put_tmp[0] = 0;
+            bool get_tmp = false;
             // store labels per hub individually//
             while (local_cnt<sync_thres && local_cnt<N) {
-				//std::cout<<"Tree "<<local_cnt<<std::endl;
+                //std::cout<<"Tree "<<local_cnt<<std::endl;
                 if (do_plant) {
                     std::pair <unsigned int, unsigned int> sizes1   =   ak[tid].plant(local_cnt, true, order, rev_map, labeling, local_labeling, common_labeling);
                     std::pair <unsigned int, unsigned int> sizes2   =   ak[tid].plant(local_cnt, false, order, rev_map, labeling, local_labeling, common_labeling);
@@ -296,7 +295,7 @@ omp_set_num_threads(NUM_THREAD);
                     labels_per_hub[local_cnt-prev_sync_thres]       +=  label_size;
                     //<UPDATE> compute ratio for dynamic switching
                     double size_ratio                               =   ((double)tree_size)/((double)label_size);
-					//if(world_rank==0 && tid==0) std::cout<<"node 0, thread 0, Tree "<<local_cnt<<" ratio: "<<size_ratio<<std::endl;
+                    //if(world_rank==0 && tid==0) std::cout<<"node 0, thread 0, Tree "<<local_cnt<<" ratio: "<<size_ratio<<std::endl;
                     if (switch_compute)
                     {
                         if (size_ratio > PHASE_SWITCH_RATIO)
@@ -304,75 +303,70 @@ omp_set_num_threads(NUM_THREAD);
                             local_phase_sync[0] = 1;
                         }
                         if (tid==0) {
-				       	  bool global_check_res;
-				   	   	  MPI_Win_lock(MPI_LOCK_EXCLUSIVE, world_rank, 0, win);
-				   	      global_check_res = (global_phase_sync[0] == 1);
-				   	   	  MPI_Win_unlock(world_rank, win);
-                          if (global_check_res) {
-                            local_phase_sync[0] = 1;
-                          }
+                            MPI_Win_lock(MPI_LOCK_EXCLUSIVE, world_rank, 0, win);
+                            MPI_Get(&global_check_tmp[0], 1, MPI_INT, world_rank, 0, 1, MPI_INT, win); 
+                            MPI_Win_unlock(world_rank, win);
+                            if (global_check_tmp[0]==1) {
+                                local_phase_sync[0] = 1;
+                            }
                         
-                          else if (local_phase_sync[0] == 1){
-                                global_phase_sync[0] = 1;
-								for (size_t node_id=0; node_id<world_size; node_id++) {
-									if (node_id == world_rank) continue;
-									MPI_Win_lock(MPI_LOCK_EXCLUSIVE, node_id, 0, win);
-									//std::cout<<"node " <<world_rank<<" write to node "<<node_id<<", Tree "<<local_cnt<<", ratio: "<<size_ratio<<std::endl;
-									MPI_Put(&global_phase_sync[0], 1, MPI_INT, node_id, 0, 1, MPI_INT, win);
-									MPI_Win_unlock(node_id, win);
-									//std::cout<<" Success! node " <<world_rank<<" write to node "<<node_id<<", Tree "<<local_cnt<<", ratio: "<<size_ratio<<std::endl;
-								}
-                           }
+                            else if (local_phase_sync[0] == 1){
+                                for (size_t node_id=0; node_id<world_size; node_id++) {
+                                    MPI_Win_lock(MPI_LOCK_EXCLUSIVE, node_id, 0, win);
+                                    //std::cout<<"node " <<world_rank<<" write to node "<<node_id<<", Tree "<<local_cnt<<", ratio: "<<size_ratio<<std::endl;
+                                    MPI_Put(&local_phase_sync[0], 1, MPI_INT, node_id, 0, 1, MPI_INT, win);
+                                    MPI_Win_unlock(node_id, win);
+                                    //std::cout<<" Success! node " <<world_rank<<" write to node "<<node_id<<", Tree "<<local_cnt<<", ratio: "<<size_ratio<<std::endl;
+                                }
+                             }
                         }
-                       	if (local_phase_sync[0]==1 )
-				   	 	{
-                            //std::cout<<"node: "<<world_rank<<" local "<<local_phase_sync[0] <<" global "<< global_phase_sync[0]<<std::endl;
-							//std::cout<<"node "<<world_rank<<" global_value is true. "<<std::endl;
+                        if (local_phase_sync[0]==1 )
+                        {
                             thread_sum += label_size;
                             break;
                        }
-                   	}
+                    }
                 }
                 else {
                     labels_per_hub[local_cnt-prev_sync_thres]       +=  ak[tid].iteration_buffer(local_cnt, true, order, rev_map, labeling, local_labeling, common_labeling, lck);
                     labels_per_hub[local_cnt-prev_sync_thres]       +=  ak[tid].iteration_buffer(local_cnt, false, order, rev_map, labeling, local_labeling, common_labeling, lck);
                 }
-                thread_sum += labels_per_hub[local_cnt-prev_sync_thres]; //<BUG_FIX> offset not subtracted
-                //if (local_cnt%25==0)
-                    //std::cerr << "\r  "<<local_cnt<<"/"<<N;
-                //std::cout <<local_cnt<<"/"<<N<<std::endl;
+                thread_sum += labels_per_hub[local_cnt-prev_sync_thres]; //
                 local_cnt = __sync_fetch_and_add(&cnt, world_size);
             }
             __sync_fetch_and_add(&label_local_sum, thread_sum);
-			
-            //if(cnt >= sync_thres && sync_thres<N) __sync_fetch_and_add(&cnt, -world_size);
+            
             if(cnt >= sync_thres ) __sync_fetch_and_add(&cnt, -world_size);
         }
-    MPI_Win_fence(0, win);
+        MPI_Win_fence(0, win);
 
-		if (local_phase_sync[0]==1 && global_phase_sync[0]==0)
-		{
-									//std::cout<<"node " <<world_rank<<std::endl;
-            global_phase_sync[0] = 1;
-			for (size_t node_id=0; node_id<world_size; node_id++) {
-				if (node_id == world_rank) continue;
-				MPI_Win_lock(MPI_LOCK_EXCLUSIVE, node_id, 0, win);
-				//std::cout<<"node " <<world_rank<<" write to node "<<node_id<<", Tree "<<local_cnt<<", ratio: "<<size_ratio<<std::endl;
-				MPI_Put(&global_phase_sync[0], 1, MPI_INT, node_id, 0, 1, MPI_INT, win);
-				MPI_Win_unlock(node_id, win);
-				//std::cout<<" Success! node " <<world_rank<<" write to node "<<node_id<<", Tree "<<local_cnt<<", ratio: "<<size_ratio<<std::endl;
-			}
-		}
+        MPI_Win_lock(MPI_LOCK_EXCLUSIVE, world_rank, 0, win);
+        MPI_Get(&global_check_tmp[0], 1, MPI_INT, world_rank, 0, 1, MPI_INT, win); 
+        MPI_Win_unlock(world_rank, win);
+
+        if (local_phase_sync[0]==1 && global_check_tmp[0]==0)
+        {
+            for (size_t node_id=0; node_id<world_size; node_id++) {
+                MPI_Win_lock(MPI_LOCK_EXCLUSIVE, node_id, 0, win);
+                //std::cout<<"node " <<world_rank<<" write to node "<<node_id<<", Tree "<<local_cnt<<", ratio: "<<size_ratio<<std::endl;
+                MPI_Put(&local_phase_sync[0], 1, MPI_INT, node_id, 0, 1, MPI_INT, win);
+                MPI_Win_unlock(node_id, win);
+                //std::cout<<" Success! node " <<world_rank<<" write to node "<<node_id<<", Tree "<<local_cnt<<", ratio: "<<size_ratio<<std::endl;
+            }
+        }
+
+        MPI_Win_lock(MPI_LOCK_EXCLUSIVE, world_rank, 0, win);
+        MPI_Get(&global_check_tmp[0], 1, MPI_INT, world_rank, 0, 1, MPI_INT, win); 
+        MPI_Win_unlock(world_rank, win);
         //<UPDATE>// if phase switched, find the max tree done by any node
-        if (do_plant && switch_compute && (global_phase_sync[0]==1))
+        if (do_plant && switch_compute && (global_check_tmp[0]==1))
         {
             //find the max tree to compute. allreduce
-								//	std::cout<<"out of plant " <<world_rank<<std::endl;
             int max_cnt;
             MPI_Allreduce(&cnt, &max_cnt, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
             //update sync_thres
             sync_thres          = max_cnt;
-			std::cout<<"Max tree done before switch "<<max_cnt<<std::endl;
+            std::cout<<"Max tree done before switch "<<max_cnt<<std::endl;
             //complete remaining trees and then switch phases
             PHASE_SWITCH_THRESH = max_cnt;
             //switch_compute =false
@@ -436,70 +430,66 @@ omp_set_num_threads(NUM_THREAD);
             //Move hubs that were not broadcasted to global labeling//
             if (lastCV < sync_thres)
             {
-                 moveLocalToGlobal(labeling, local_labeling, local_load_offset); //<TODO> not implemented yet
+                 moveLocalToGlobal(labeling, local_labeling, local_load_offset); //
                  COMM_DONE = true; //common labels have been stored
                  labeling.sort_partial(NUM_THREAD, labeling_last_loc);
                  //labeling.sort(NUM_THREAD);
             }
-        }
-        else //need pruning. Last hub to be used - lastV
-        {
-            do
-            {
-                lastV = findLastSend(MEM_BUDGET, cumulative_label_counts, sync_thres, prev_sync_thres, NUM_THREAD);
-                //std::cout << " filtering: find last send "<< lastV<<std::endl;
-                parallelLoadWOffset(label_list, local_labeling, local_load_offset, lastV, NUM_THREAD);
-                //std::cout << " filtering: parallel load offset "<<std::endl;
-                int label_local_iter_sum = label_list.size();
-                //std::cout << " filtering: label_local_sum "<< label_local_iter_sum<<std::endl;
-                std::vector<int> world_node_offsets = gatherAllLabels(label_list, recv_buffer, world_size, world_rank);
-                int label_global_iter_sum = recv_buffer.size();
-                //std::cout << " filtering: label_global_sum "<< label_global_iter_sum<<std::endl;
-                int mask_size =(label_global_iter_sum/3-1)/32+1;
-                std::vector<unsigned int> mask (mask_size, ~0);
-                computeLocalMask(mask, recv_buffer, 0, label_global_iter_sum, order, labeling, local_labeling, world_rank);
-                //std::cout << " filtering: compute local mask "<<std::endl;
-                computeGlobalMask(mask, world_rank);
-                //std::cout << " filtering: compute global mask "<<std::endl;
+       }
+       else //need pruning. Last hub to be used - lastV
+       {
+           do
+           {
+               lastV = findLastSend(MEM_BUDGET, cumulative_label_counts, sync_thres, prev_sync_thres, NUM_THREAD);
+               //std::cout << " filtering: find last send "<< lastV<<std::endl;
+               parallelLoadWOffset(label_list, local_labeling, local_load_offset, lastV, NUM_THREAD);
+               //std::cout << " filtering: parallel load offset "<<std::endl;
+               int label_local_iter_sum = label_list.size();
+               //std::cout << " filtering: label_local_sum "<< label_local_iter_sum<<std::endl;
+               std::vector<int> world_node_offsets = gatherAllLabels(label_list, recv_buffer, world_size, world_rank);
+               int label_global_iter_sum = recv_buffer.size();
+               //std::cout << " filtering: label_global_sum "<< label_global_iter_sum<<std::endl;
+               int mask_size =(label_global_iter_sum/3-1)/32+1;
+               std::vector<unsigned int> mask (mask_size, ~0);
+               computeLocalMask(mask, recv_buffer, 0, label_global_iter_sum, order, labeling, local_labeling, world_rank);
+               //std::cout << " filtering: compute local mask "<<std::endl;
+               computeGlobalMask(mask, world_rank);
+               //std::cout << " filtering: compute global mask "<<std::endl;
 
-                if (COMM_DONE) //if common labels are done, only look at your own list
-                    loadFromRecvBuffer(recv_buffer, mask, true, world_node_offsets[world_rank], world_node_offsets[world_rank]+label_local_iter_sum, world_node_offsets[world_rank], world_node_offsets[world_rank]+label_local_iter_sum, 0, common_labeling, labeling);
-                else //look at all labels
-                    loadFromRecvBuffer(recv_buffer, mask, true, 0, label_global_iter_sum, world_node_offsets[world_rank], world_node_offsets[world_rank]+label_local_iter_sum, lastCV, common_labeling, labeling);
+               if (COMM_DONE) //if common labels are done, only look at your own list
+                   loadFromRecvBuffer(recv_buffer, mask, true, world_node_offsets[world_rank], world_node_offsets[world_rank]+label_local_iter_sum, world_node_offsets[world_rank], world_node_offsets[world_rank]+label_local_iter_sum, 0, common_labeling, labeling);
+               else //look at all labels
+                   loadFromRecvBuffer(recv_buffer, mask, true, 0, label_global_iter_sum, world_node_offsets[world_rank], world_node_offsets[world_rank]+label_local_iter_sum, lastCV, common_labeling, labeling);
 
-                COMM_DONE = (lastV >= lastCV) && (lastCV < sync_thres);
-                updateCumulativeCounts(cumulative_label_counts, lastV, prev_sync_thres);
-            }
-            while(lastV < sync_thres);
-            if (lastCV < sync_thres) //something went into global labeling
-                labeling.sort_partial(NUM_THREAD, labeling_last_loc);
-            if (lastCV > prev_sync_thres) //something went into common labeling
-                common_labeling.sort_partial(NUM_THREAD, common_last_loc);
-        }
-        if (!COMM_DONE)
-            COMM_DONE = (COMMON_LABEL_BUDGET==0); //done if common label budget is exhausted
-        ///// Reset threshold  //////////
-        prev_sync_thres     = sync_thres;
+               COMM_DONE = (lastV >= lastCV) && (lastCV < sync_thres);
+               updateCumulativeCounts(cumulative_label_counts, lastV, prev_sync_thres);
+           }
+           while(lastV < sync_thres);
+           if (lastCV < sync_thres) //something went into global labeling
+               labeling.sort_partial(NUM_THREAD, labeling_last_loc);
+           if (lastCV > prev_sync_thres) //something went into common labeling
+               common_labeling.sort_partial(NUM_THREAD, common_last_loc);
+       }
+       if (!COMM_DONE)
+           COMM_DONE = (COMMON_LABEL_BUDGET==0); //done if common label budget is exhausted
+       ///// Reset threshold  //////////
+       prev_sync_thres     = sync_thres;
 
-        //<UPDATE> new logic to compute synchronization points//
-       	do_plant         	= (do_plant && switch_compute); //trees upto dynamic switching point created
-		//if (!do_plant) std::cout<<" turn to PLL "<<" cnt:"<<cnt<<std::endl;
-        //do_plant         	= true; //trees upto dynamic switching point created
-        //if(do_plant) sync_thres   = N;
-        //else  sync_thres          = std::min(sync_thres*2, (unsigned)N);
-        sync_thres          = std::min(sync_thres*2, (unsigned)N);
+       //<UPDATE> new logic to compute synchronization points//
+       do_plant            = (do_plant && switch_compute); //trees upto dynamic switching point created
+       sync_thres          = std::min(sync_thres*2, (unsigned)N);
 
-        label_local_sum = 0;
-        label_global_sum = 0;
-        local_labeling.clear(NUM_THREAD);
-        label_list.clear();
+       label_local_sum = 0;
+       label_global_sum = 0;
+       local_labeling.clear(NUM_THREAD);
+       label_list.clear();
 
-        // print averge labeling size
-       // if(world_rank==0) std::cout << "Average label size after sync is " << labeling.get_avg() << std::endl;
-       // if(world_rank==0) std::cout << "Common label size after sync is " << common_labeling.get_avg() << std::endl;
-        clean_end = omp_get_wtime();
-        clean_time += clean_end - clean_start;
-        if(world_rank==0) std::cout << "Clean time  " << clean_end - clean_start << std::endl;
+       // print averge labeling size
+       //if(world_rank==0) std::cout << "Average label size after sync is " << labeling.get_avg() << std::endl;
+       //if(world_rank==0) std::cout << "Common label size after sync is " << common_labeling.get_avg() << std::endl;
+       clean_end = omp_get_wtime();
+       clean_time += clean_end - clean_start;
+       if(world_rank==0) std::cout << "Clean time  " << clean_end - clean_start << std::endl;
     }
     end_time = omp_get_wtime();
     total_time = end_time - start_time;
@@ -512,21 +502,9 @@ omp_set_num_threads(NUM_THREAD);
     if(world_rank==0) std::cout << "Time cost  " << total_time << std::endl;
     if(world_rank==0) std::cout << "Clean time  " << clean_time << std::endl;
     remove_common(labeling, common_labeling, NUM_THREAD, world_rank, world_size);
-	common_labeling.clear();
-	labeling.sort(NUM_THREAD);
+    common_labeling.clear();
+    labeling.sort(NUM_THREAD);
     if(world_rank==0) std::cout << "Final global label size is " <<labeling.get_avg()<< std::endl;
-//	Vertex v1 = 451873;
-//	Vertex v2 = 1736581;
-//	for (int side = 0; side < 2; side++) {
-//		for (int i = 0; i < labeling.label_v[v1][side].size(); i++) {
-//			std::cout<<v1<<"'s "<<side<<" side label: "<<labeling.label_v[v1][side][i]<<" "<<labeling.label_d[v1][side][i]<<std::endl;
-//		}
-//	}
-//	for (int side = 0; side < 2; side++) {
-//		for (int i = 0; i < labeling.label_v[v2][side].size(); i++) {
-//			std::cout<<v2<<"'s "<<side<<" side label: "<<labeling.label_v[v2][side][i]<<" "<<labeling.label_d[v2][side][i]<<std::endl;
-//		}
-//	}
 
 
 }
